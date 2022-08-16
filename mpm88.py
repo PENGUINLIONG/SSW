@@ -92,7 +92,7 @@ k = 0
 while k < 240:
     for s in range(50):
         substep()
-    canvas.circles(x, radius=0.015, color=(1.0, 1.0, 1.0))
+    canvas.circles(x, radius=0.012, color=(1.0, 1.0, 1.0))
     img = gui.get_image_buffer_as_numpy()
     gui.show()
     plot.imsave(f"assets/mpm88-output/k{k:03}.png", img)

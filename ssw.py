@@ -265,7 +265,8 @@ def compose(maskTex: sampler2D, bgTex: sampler2D, normalTex: sampler2D, poissonT
         msk = maskTex.sample_lod(uv, 0.0)[0]
         normal = normalTex.sample_lod(uv, 0.0) * 2.0 - 1.0
         normall = vec2(normal[0], normal[1])
-        bg = bgTex.sample_lod(uv + normall + duv, 0.0)
+        # `duv` to add a bit of tiny bit of refraction to the perpendicular view.
+        bg = bgTex.sample_lod(uv - normall * 0.5 + duv, 0.0)
         poisson = saturate(poissonTex.sample_lod(uv, 0.0)[0] * 0.2 + 0.8)
 
         normal2 = normalize(vec3(normall, normal_z))
@@ -273,9 +274,12 @@ def compose(maskTex: sampler2D, bgTex: sampler2D, normalTex: sampler2D, poissonT
         light = normalize(vec3(-1,-1,0.7))
 
         f = fresnel(fresnel_amount, fresnel_alpha, normal2, view)
+
+        # A bit of dimming because water somehow absorbs light energy.
         d = clamp(dimming(normal2, view) * dimming_amount, 0.0, 1.0)
         liquid_color = vec4(liquid_color_r, liquid_color_g, liquid_color_b, 1.0)
 
+        # Specular by a directional light.
         h = ti.pow(saturate(normalize((light + view) * 0.5).dot(normal2)), light_exponent) * light_intensity
 
         color_mask = lerp(vec4(1.0), liquid_color, msk)
@@ -291,7 +295,7 @@ window = ti.ui.Window("X", RES)
 canvas = window.get_canvas()
 gui = window.get_gui()
 
-cut_thresh = 0.178
+cut_thresh = 0.35
 fresnel_amount = 63.56
 fresnel_alpha = 1.949
 dimming_amount = 0.01
@@ -299,7 +303,7 @@ normal_z = 0.924
 liquid_color = (207/255, 228/255, 244/255)
 bloom_intensity = 2.0
 light_exponent = 70.0
-light_intensity = 0.4
+light_intensity = 0.2
 
 k = 0
 while window.running:
