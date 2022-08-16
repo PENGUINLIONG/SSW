@@ -260,11 +260,12 @@ def lerp(x, y, s):
 def compose(maskTex: sampler2D, bgTex: sampler2D, normalTex: sampler2D, poissonTex: sampler2D, outTex: image2D, w: ti.i32, h: ti.i32, fresnel_amount: ti.template(), fresnel_alpha: ti.template(), dimming_amount: ti.template(), normal_z: ti.template(), liquid_color_r: ti.template(), liquid_color_g: ti.template(), liquid_color_b: ti.template(), light_exponent: ti.template(), light_intensity: ti.template()):
     for x, y in ti.ndrange(w, h):
         uv = get_uv(x, y, w, h)
+        duv = get_duv(w, h)
 
         msk = maskTex.sample_lod(uv, 0.0)[0]
         normal = normalTex.sample_lod(uv, 0.0) * 2.0 - 1.0
         normall = vec2(normal[0], normal[1])
-        bg = bgTex.sample_lod(uv + normall, 0.0)
+        bg = bgTex.sample_lod(uv + normall + duv, 0.0)
         poisson = saturate(poissonTex.sample_lod(uv, 0.0)[0] * 0.2 + 0.8)
 
         normal2 = normalize(vec3(normall, normal_z))
@@ -291,11 +292,11 @@ canvas = window.get_canvas()
 gui = window.get_gui()
 
 cut_thresh = 0.178
-fresnel_amount = 22.0
-fresnel_alpha = 5.33
-dimming_amount = 0.06
-normal_z = 0.1
-liquid_color = (184/255, 223/255, 244/255)
+fresnel_amount = 63.56
+fresnel_alpha = 1.949
+dimming_amount = 0.01
+normal_z = 0.924
+liquid_color = (207/255, 228/255, 244/255)
 bloom_intensity = 2.0
 light_exponent = 70.0
 light_intensity = 0.4
